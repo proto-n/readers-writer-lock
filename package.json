@@ -1,0 +1,30 @@
+{
+  "name": "readers-writer-lock",
+  "version": "1.0.0",
+  "description": "Implementation of a readers-writer lock for async/await code.",
+  "main": "readers-writer-lock.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/proto-n/readers-writer-lock.git"
+  },
+  "keywords": [
+    "async",
+    "rwlock",
+    "mutex",
+    "readers-writers-lock",
+    "lock",
+    "concurrency"
+  ],
+  "author": "Domokos Kelen",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/proto-n/readers-writer-lock/issues"
+  },
+  "homepage": "https://github.com/proto-n/readers-writer-lock#readme",
+  "devDependencies": {
+    "jest": "^24.8.0"
+  }
+}
