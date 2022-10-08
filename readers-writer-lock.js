@@ -21,6 +21,7 @@ class Lock {
 	constructor(){
 		this.order = locknum++
 		this.lock_promise = null
+		this.locked = false
 	}
 	async run(f){
 		let resolve = null
@@ -28,8 +29,28 @@ class Lock {
 		this.lock_promise = new Promise((rs,rj)=>{
 			resolve = rs
 		})
+		// we need to set the flag before awaiting since await could give control
+		// to other parts of the codebase
+		this.locked = true
 		await previous_lock
-		return await executeAndResolve(f, resolve)
+		// we need to set it again, since if the previous lock just unlocked, then
+		// it sets it to false
+		this.locked = true
+		return await executeAndResolve(f, ()=>{
+			this.locked=false
+			resolve()
+		})
+	}
+
+	async run_or_fail(f){
+		// need to give up control to allow locking by code in the same synchronous
+		// code block
+		await new Promise((resolve) => process.nextTick(() => resolve()));
+		if(this.locked){
+			throw "locked"
+		} else {
+			return await this.run(f)
+		}
 	}
 }
 

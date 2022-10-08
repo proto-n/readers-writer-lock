@@ -14,6 +14,7 @@ test('Lock locks execution, separate locks lock separately', async () => {
 		accum.push('lockA run1 end')
 	}))
 	tasks.push(lockA.run(async function(){
+		await rwlock.sleep(10)
 		accum.push('lockA run2 begin')
 		await rwlock.sleep(200)
 		accum.push('lockA run2 end')
@@ -24,6 +25,7 @@ test('Lock locks execution, separate locks lock separately', async () => {
 		accum.push('lockB run1 end')
 	}))
 	tasks.push(lockB.run(async function(){
+		await rwlock.sleep(10)
 		accum.push('lockB run2 begin')
 		await rwlock.sleep(200)
 		accum.push('lockB run2 end')
@@ -39,6 +41,23 @@ test('Lock locks execution, separate locks lock separately', async () => {
 		'lockA run2 end',
 		'lockB run2 end',
 	])
+})
+
+test.only('Run_or_fail fails while locked, runs after', async () => {
+	let lock = new rwlock.Lock()
+	expect(await lock.run_or_fail(async ()=>1)).toBe(1)
+
+	let s1 = lock.run(async ()=>{await rwlock.sleep(200)})
+
+	try{
+		await lock.run_or_fail(async ()=>1)
+	} catch(e){
+		console.log("thrown")
+		expect(e).toEqual("locked")
+	}
+	await s1
+	expect(await lock.run_or_fail(async ()=>1)).toBe(1)
+	expect.assertions(3)
 })
 
 test('Combined locks wait for all used locks', async () => {
@@ -59,6 +78,7 @@ test('Combined locks wait for all used locks', async () => {
 		register_exec('a1 end')
 	}))
 	tasks.push(lockA.run(async function(){
+		await rwlock.sleep(10)
 		register_exec('a2 begin')
 		await rwlock.sleep(200)
 		register_exec('a2 end')
@@ -69,11 +89,13 @@ test('Combined locks wait for all used locks', async () => {
 		register_exec('b end')
 	}))
 	tasks.push(rwlock.combine([lockA, lockB]).run(async function(){
+		await rwlock.sleep(10)
 		register_exec('AB begin')
 		await rwlock.sleep(200)
 		register_exec('AB end')
 	}))
 	tasks.push(rwlock.combine([lockB, lockC]).run(async function(){
+		await rwlock.sleep(10)
 		register_exec('BC begin')
 		await rwlock.sleep(200)
 		register_exec('BC end')
@@ -84,6 +106,7 @@ test('Combined locks wait for all used locks', async () => {
 		register_exec('C end')
 	}))
 	tasks.push(rwlock.combine([lockA, lockB, lockC]).run(async function(){
+		await rwlock.sleep(10)
 		register_exec('ABC begin')
 		await rwlock.sleep(200)
 		register_exec('ABC end')
